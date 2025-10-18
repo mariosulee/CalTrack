@@ -1,11 +1,13 @@
 import { categories } from "../data/categories"
-import { useState, type Dispatch} from "react"
+import { useState, type Dispatch, useEffect} from "react"
 import type { Activity } from "../types/types"
 import type { ActivityActions } from "../reducers/activityReducer"
 import { v4 as uuidv4 } from "uuid"
+import type { ActivityState } from "../reducers/activityReducer"
 
 type FormProps={
-    dispatch:Dispatch<ActivityActions>
+    dispatch:Dispatch<ActivityActions>,
+    state:ActivityState
 }
 
 const initialState: Activity={
@@ -16,7 +18,7 @@ const initialState: Activity={
 }
 
 
-export default function Form( {dispatch} : FormProps ){
+export default function Form( {dispatch, state} : FormProps ){
 
     
     const [activity, setActivity]=useState<Activity>(initialState)
@@ -58,6 +60,20 @@ export default function Form( {dispatch} : FormProps ){
     }
 
 
+
+    // detectar el activeId cuando se pulsa el boton de edicion de una actividad
+    useEffect( () => {
+        if(state.activeId){ //si hay algo
+            const selectedActivity=state.activities.filter (a => a.id === state.activeId) [0] //recorro las actividades y meto 
+                                         // en selectedActivity la actividad q tenga el mismo id q la que yo presione en editar
+            setActivity(selectedActivity) //setteo con esta actividad el estado creado con useState en este componente
+        }
+
+    }, [state.activeId])
+
+
+
+
     return(
         <>
             <form className="space-y-5 bg-white shadow-xl p-10 rounded-lg"
@@ -86,7 +102,7 @@ export default function Form( {dispatch} : FormProps ){
                 <div className="grid grid-cols-1 gap-3 mt-8">
                     
                     <label htmlFor="name" className="font-[Inter] font-bold">Activity:</label> 
-                    <input id="name" type="text" className="border border-slate-300 p-2 rounded-lg"
+                    <input id="name" type="text" className="border border-slate-300 p-2 rounded-lg bg-white"
                     placeholder="e.g. Tennis match, Dinner at a restaurant, 10km running..."
                     value={activity.name}
                     onChange={handleChange}/> 
@@ -96,7 +112,7 @@ export default function Form( {dispatch} : FormProps ){
                 {/* NUMERO DE CALORIAS */}
                 <div className="grid grid-cols-1 gap-3 mt-8">
                     <label htmlFor="calories" className="font-[Inter] font-bold">Calories:</label> 
-                    <input id="calories" type="number" className="border border-slate-300 p-2 rounded-lg"
+                    <input id="calories" type="number" className="border border-slate-300 p-2 rounded-lg bg-white"
                     placeholder="Calories consumed or burned"
                     value={activity.calories}
                     onChange={handleChange}/>
@@ -104,7 +120,9 @@ export default function Form( {dispatch} : FormProps ){
 
                 
                 {/* SUBMIT */}
-                <input type="submit" className="mt-5 bg-gray-900 hover:bg-lime-700 w-full p-2 font-bold text-white font-[Inter] cursor-pointer rounded-lg disabled:opacity-10"
+                <input type="submit" className={`mt-5 w-full p-2 font-bold text-white font-[Inter] cursor-pointer rounded-lg disabled:opacity-10
+                    ${activity.category === 1 ? 'bg-orange-500 hover:bg-orange-600' : 'bg-lime-500 hover:bg-lime-600'}`}
+                
                 value={activity.category===1 ? 'Record Food' : "Record Exercise" }
                 disabled={!isValidActivity()}/>
                         
